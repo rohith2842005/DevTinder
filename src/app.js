@@ -1,18 +1,26 @@
 const express = require('express');
+const connectDB = require('./database.js');  // change to require
 const app = express();
-app.listen(3000, () => console.log('Server running on port 3000'));
-app.get("/user", (req, res) => {
-    res.json({ name: "John Doe", age: 30 });
+async function startServer() {
+    try {
+        await connectDB();
+        app.listen(3000, () => {
+            console.log("Server started on port 3000");
+        });
+    } catch (err) {
+        console.error("Failed to start server:", err);
+    }
+}
+startServer();
+const user=require('./user.js');
+app.use(express.json());
+app.post('/users',async(req,res)=>{
+    try{
+        const newUser=new user(req.body);
+        await newUser.save();
+        res.status(201).send(newUser);
+    }
+    catch(err){
+        res.status(400).send(err);
+    }
 });
-app.post("/user", (req, res) => {
-    res.status(201).json({ message: "User created" });
-});
-app.put("/user/:id", (req, res) => {
-    res.json({ message: `User ${req.params.id} updated` });
-}); 
-app.delete("/user/:id", (req, res) => {
-    res.json({ message: `User ${req.params.id} deleted` });
-}   );
-app.patch("/user/:id", (req, res) => {
-    res.json({ message: `User ${req.params.id} partially updated` });
-}   );
